@@ -70,6 +70,7 @@
 							<option value="stakeholder">stakeholder</option>
 						</select>
 						Reverse column order: <button id="reverseOrder">Reverse column order</button>
+						Move a card: <button id="moveCard">Move a card</button>
 					</div>
 					`,
 				]
@@ -78,6 +79,13 @@
 			 document.querySelector("#reverseOrder").addEventListener("click", (event) => {
 				board.setConfig({
 					columns: columns[groupBy].reverse()
+				});
+			});
+
+			document.querySelector("#moveCard").addEventListener("click", (event) => {
+				board.updateCard({
+					id: 1,
+					status: "inprogress"
 				});
 			});
 

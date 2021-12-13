@@ -88,6 +88,7 @@ function getData() {
 
 	const activities = [
 		{
+			id: 1,
 			label: "Activity #1",
 			start_date: new Date("01/07/2021"),
 			status: "todo",
