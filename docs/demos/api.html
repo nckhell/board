@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="author" content="XB Software" />
+		<meta name="publisher" content="XB Software" />
+		<meta name="copyright" content="XB Software" />
+		<meta charset="UTF-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1,  user-scalable=no, shrink-to-fit=no"
+		/>
+		<link rel="icon" href="../favicon.ico" type="image/x-icon" />
+		<link rel="icon" href="../assets/favicon/icon-16.png" sizes="16x16" />
+		<link rel="icon" href="../assets/favicon/icon-32.png" sizes="32x32" />
+		<link rel="icon" href="../assets/favicon/icon-48.png" sizes="48x48" />
+		<link rel="icon" href="../assets/favicon/icon-96.png" sizes="96x96" />
+		<link
+			rel="icon"
+			href="../assets/favicon/icon-144.png"
+			sizes="144x144"
+		/>
+
+		<!-- Kanban -->
+		<link rel="stylesheet" href="../dist/kanban.css" />
+		<script src="../dist/kanban.js"></script>
+
+		<!-- Demo data -->
+		<script src="./common/data.js"></script>
+		<link rel="stylesheet" href="../assets/demos.css" />
+
+		<title>Kanban: API</title>
+
+		<style>
+			.serialized {
+				position: absolute;
+				z-index: 2;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+				width: 800px;
+				max-width: 90%;
+				height: 600px;
+				max-height: 90%;
+				overflow: auto;
+				background: #fff;
+				box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+				padding: 10px;
+				visibility: hidden;
+				opacity: 0;
+				transition: opacity 0.2s ease, visibility 0.2s ease;
+			}
+			.serialized.show {
+				visibility: visible;
+				opacity: 1;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="g-wrap">
+			<header class="g-header">
+				<div class="h-wrap">
+					<div class="h-nav">
+						<a href="../index.html">Back to demos</a>
+					</div>
+					<div class="h-title">
+						Kanban API. For a full list of API,
+						<a
+							href="https://docs.dhtmlx.com/kanban/api/api_overview/"
+							target="_blank"
+							>see the documentation</a
+						>
+					</div>
+					<div class="h-cta">
+						<a
+							href="https://dhtmlx.com/docs/products/dhtmlxKanban/download.shtml"
+							target="_blank"
+							class="g-btn"
+							>Free Trial</a
+						>
+					</div>
+				</div>
+			</header>
+
+			<pre class="serialized"></pre>
+			<div class="g-btn-row">
+				<button class="g-btn g-btn--sm" onclick="handleAdd()">
+					Add card to Backlog
+				</button>
+				<button class="g-btn g-btn--sm" onclick="handleAddInProgress()">
+					Add card to In progress to the beginning
+				</button>
+				<button class="g-btn g-btn--sm" onclick="handleMove()">
+					Move card from Backlog to In Progress
+				</button>
+				<button class="g-btn g-btn--sm" onclick="handleRemove()">
+					Remove selected cards
+				</button>
+				<button class="g-btn g-btn--sm" onclick="handleAddColumn()">
+					Add column and card
+				</button>
+				<button
+					class="g-btn g-btn--sm"
+					onclick="event.stopPropagation(); handleSerialize()"
+				>
+					Serialize cards
+				</button>
+			</div>
+
+			<div id="toolbar"></div>
+			<div id="root"></div>
+		</div>
+
+		<script>
+			const { Kanban, Toolbar } = kanban;
+			const { columns, cards } = getData();
+
+			const board = new Kanban("#root", {
+				columns,
+				cards,
+			});
+			new Toolbar("#toolbar", { api: board.api });
+
+			function handleAdd() {
+				board.addCard({
+					columnId: "backlog",
+					card: { label: "New card" },
+				});
+			}
+
+			function handleAddInProgress() {
+				const beforeId = board.getAreaCards("inprogress")[0]?.id;
+
+				board.addCard({
+					columnId: "inprogress",
+					before: beforeId,
+					card: { label: "New card" },
+					select: false,
+				});
+			}
+
+			function handleMove() {
+				const backlogCards = board.getAreaCards("backlog");
+				const lastCard = backlogCards[backlogCards.length - 1];
+				if (lastCard) {
+					board.moveCard({
+						id: lastCard.id,
+						columnId: "inprogress",
+					});
+				}
+			}
+			function handleRemove() {
+				const selectedCards = board.getSelection() || [];
+				selectedCards.forEach(id => {
+					board.deleteCard({ id });
+				});
+			}
+
+			function handleAddColumn() {
+				const id = kanban.uid();
+				board.addColumn({
+					id,
+					label: "New column",
+				});
+				board.addCard({
+					columnId: id,
+					card: { label: "New Card" },
+				});
+			}
+
+			let serializedCards;
+			const serialized = document.querySelector(".serialized");
+			function handleSerialize() {
+				const cards = board.serialize();
+				serializedCards = JSON.stringify(cards, null, 4);
+				serialized.innerHTML = serializedCards;
+				serialized.classList.add("show");
+			}
+
+			window.addEventListener("click", function (e) {
+				if (
+					!serialized.contains(e.target) &&
+					serialized.classList.contains("show")
+				)
+					serialized.classList.remove("show");
+			});
+		</script>
+	</body>
+</html>
