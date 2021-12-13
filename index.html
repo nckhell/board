@@ -37,12 +37,15 @@
 				getData();
 			var toggleSwimlane = true
 			const defaultswimlaneConfig = {
-				rows,
-				rowKey: "stakeholder"
+				rows: undefined,
+				rowKey: undefined
 			}
+			var groupBy = "status"
+			var subGroupBy = "none"
 
 			const kanbanSettings = {
-				columns,
+				columns: columns.status,
+				columnKey: groupBy,
 				cards,
 				...defaultswimlaneConfig,
 				cardShape,
@@ -56,28 +59,67 @@
 					() =>
 					`<div style="font-weight:500;font-size:18px;padding:0 10px;">Activities<div/>`,
 					"search",
-					`<div style="margin-left: auto; padding-left: 10px;"><button id="toggleSwimlane" class="g-btn g-btn--sm">Toggle swimlane</button></div>`,
+					`<div style="margin-left: auto; padding-left: 10px;">
+						Group by:<select name="groupBy" id="groupBy">
+							<option value="status" selected>status</option>
+							<option value="stakeholder">stakeholder</option>
+						</select>
+						Subgroup:<select name="subGroupBy" id="subGroupBy">
+							<option value="none" selected>none</option>
+							<option value="status">status</option>
+							<option value="stakeholder">stakeholder</option>
+						</select>
+						Reverse column order: <button id="reverseOrder">Reverse column order</button>
+					</div>
+					`,
 				]
 			 });
 
-			 document.querySelector("#toggleSwimlane").addEventListener("click", () => {
-				toggleSwimlane = !toggleSwimlane
-				var updatedSwimLaneSettings = defaultswimlaneConfig
+			 document.querySelector("#reverseOrder").addEventListener("click", (event) => {
+				board.setConfig({
+					columns: columns[groupBy].reverse()
+				});
+			});
 
-				if(toggleSwimlane) {
+			 document.querySelector("#groupBy").addEventListener("change", (event) => {
+				groupBy = event.target.value
+
+				if(groupBy === subGroupBy) {
 					board.setConfig({
-						...kanbanSettings,
-						...defaultswimlaneConfig
+						rows: undefined,
+						rowKey: undefined
+					});
+				}
+
+				board.setConfig({
+					columns: columns[groupBy],
+					columnKey: groupBy,
+				});
+			});
+
+			document.querySelector("#subGroupBy").addEventListener("change", (event) => {
+				subGroupBy = event.target.value
+
+				if(groupBy === subGroupBy) {
+					board.setConfig({
+						rows: undefined,
+						rowKey: undefined
+					});
+					return
+				}
+
+				if(subGroupBy === "none") {
+					board.setConfig({
+						rows: undefined,
+						rowKey: undefined
 					});
 					return
 				}
 
 				board.setConfig({
-					...kanbanSettings,
-					rows: undefined,
-					rowKey: undefined
+					rows: columns[subGroupBy],
+					rowKey: subGroupBy
 				});
-
 			});
 		</script>
 	</body>
